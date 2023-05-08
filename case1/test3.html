@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        body{
+            background-image: url("anh4.jpg");
+            background-size: cover;
+        }
+
+        #gameCanvas{
+            border : 2px solid black;
+            margin : 0 auto;
+            display: block;
+            width: 500px;
+            height: 800px;
+            background: no-repeat;
+            border-collapse: collapse;
+            ;
+        }
+
+    </style>
+</head>
+<body>
+
+
+<canvas id="gameCanvas"></canvas>
+<script>
+  // Khai báo biến cần thiết
+  let canvas = document.getElementById("gameCanvas");
+  let ctx = canvas.getContext("2d");
+  let ballRadius = 6;
+  let x = canvas.width/2;
+  let y = canvas.height-30;
+  let dx = 2;
+  let dy = -2;
+  let paddleHeight = 5;
+  let paddleWidth = 75;
+  let paddleX = (canvas.width-paddleWidth)/2;
+  let rightPressed = false;
+  let leftPressed = false;
+  let score = 0;
+  let startTime = Date.now();
+
+  // Xử lý sự kiện di chuyển thanh đỡ
+  document.addEventListener("keydown", keyDownHandler, false);
+  document.addEventListener("keyup", keyUpHandler, false);
+
+  function keyDownHandler(e) {
+    if(e.keyCode === 39) {
+      rightPressed = true;
+    }
+    else if(e.keyCode === 37) {
+      leftPressed = true;
+    }
+  }
+
+  function keyUpHandler(e) {
+    if(e.keyCode === 39) {
+      rightPressed = false;
+    }
+    else if(e.keyCode === 37) {
+      leftPressed = false;
+    }
+  }
+
+  // Kiểm tra va chạm của quả bóng với thanh đỡ
+  function collisionDetection() {
+    if(y + dy < ballRadius) {
+      dy = -dy;
+    }
+    else if(y + dy > canvas.height-ballRadius) {
+      if(x > paddleX && x < paddleX + paddleWidth) {
+        dy = -dy;
+        dx += (x - paddleX - paddleWidth/2) / 10;
+        score++;
+      }
+      else {
+        let endTime = Date.now();
+        let gameTime = (endTime - startTime) / 1000;
+        alert("Game over! Your score is: " + score + ", Time played: " + gameTime.toFixed(1) + " seconds.");
+        document.location.reload();
+        clearInterval(interval); // Dừng vòng lặp
+      }
+    }
+    if(x + dx > canvas.width-ballRadius || x + dx < ballRadius) {
+      dx = -dx;
+    }
+
+  }
+
+  // Vẽ thanh đỡ, quả bóng và điểm số
+  function drawPaddle() {
+    ctx.beginPath();
+    ctx.rect(paddleX, canvas.height-paddleHeight, paddleWidth, paddleHeight);
+    ctx.fillStyle = "blue";
+    ctx.fill();
+    ctx.closePath();
+  }
+
+  function drawBall() {
+    ctx.beginPath();
+    ctx.fillStyle ="white";
+    ctx.arc(x,y, ballRadius, 0, Math.PI*2);
+      ctx.fill();
+
+
+  }
+
+  function drawScore() {
+    ctx.font = "16px Arial";
+    ctx.fillStyle = "#0095DD";
+    ctx.fillText("Score: "+score , 8, 20);
+  }
+
+  // Hàm vẽ sẽ được gọi liên tục để cập nhật trạng thái của trò chơi
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    collisionDetection();
+    drawBall();
+    drawPaddle();
+    drawScore();
+
+    // Di chuyển thanh đỡ
+    if(rightPressed && paddleX < canvas.width-paddleWidth) {
+      paddleX += 7;
+    }
+    else if(leftPressed && paddleX > 0) {
+      paddleX -= 7;
+    }
+    // Cập nhật vị trí của quả bóng
+    x += dx;
+    y += dy;
+  }
+  // Khởi chạy trò chơi
+  let interval = setInterval(draw, 20);
+</script>
+</body>
+</html>
